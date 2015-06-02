@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.graticule {
+  fill: none;
+  stroke: #777;
+  stroke-width: .5px;
+  stroke-opacity: .5;
+}
+
+.boundary.active {
+  fill: red;
+  stroke: orange;
+  stroke-width: .5px;
+}
+
+.land {
+  fill: #222;
+}
+
+.boundary {
+  fill: blue;
+  stroke: orange;
+  stroke-width: .5px;
+}
+
+.test {
+  fill:orange;
+}
+
+.geojson {
+  fill:red;
+  stroke: red;
+  stroke-width: 5;
+}
+
+</style>
+<body>
+<script src="/d3.v3.min.js"></script>
+<script src="/topojson.v1.min.js"></script>
+<script>
+
+cook = {"type": "MultiPoint", "coordinates": [[-4.1397, 50.3706], [-43.2436, -22.9083] , [-67.2717, -55.9797] , [-149.4500, -17.6667], [172.1936, -41.4395] ,[151.1667, -34] , [147.70, -18.3] ,[106.7, -6], [18.4719, -34.3], [-5,-15], [-25.6, 37.7],[-4.1397, 50.3706]], "sizes":10}
+
+// cook3 = {"place": {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}, {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}}
+
+cook2 = {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}
+
+cook4 = [{"type": "Point", "id":250, "coordinates": [128.716660, 36.566666], "sizes":[10,20,30,40]}, {"type": "Point", "coordinates": [34.00, 43.00], "sizes":[20,30,50,90]}]
+
+
+var width = 1400,
+    height = 700;
+
+var projection = d3.geo.equirectangular()
+    .scale(250)
+    .translate([width / 2, height / 2])
+    .precision(.1);
+
+var path = d3.geo.path()
+    .projection(projection)
+    .pointRadius(20);
+
+var graticule = d3.geo.graticule();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.append("path")
+    .datum(graticule)
+    .attr("class", "graticule")
+    .attr("d", path);
+
+
+d3.json("/world-50m.json", function(error, world) {
+  svg.insert("path", ".graticule")
+      .datum(topojson.feature(world, world.objects.land))
+      .attr("class", "land")
+      .attr("d", path)
+
+  svg.selectAll("path")
+      .data(topojson.feature(world, world.objects.countries).features)
+    .enter().append("path")
+      .attr("d", path)
+      .attr("class", "boundary")
+      .on("mouseover", Move)
+      .on("mouseout", MoveOut)
+      .on("click", test)
+
+  point = svg.selectAll(".test").data(cook4)
+    .enter()
+    .append("circle")
+    .attr("class","test")
+    .attr("transform", function(d) { return "translate(" + projection(d.coordinates) + ")"; })
+    .attr("r", function(d) { return d.sizes[3]});
+
+
+});
+
+function Move(d){
+    active = d3.select(this).classed("active", true)
+    svg.selectAll(".test").data(cook4)
+    .transition().attr("r", function(d2) { 
+      if(d.id==d2.id){
+        return 10
+      } else {
+        return 90
+      }
+
+    });
+
+}
+
+function MoveOut(d){
+    active = d3.select(this).classed("active", false)
+    svg.selectAll(".test").data(cook4)
+    .transition().attr("r", function(d) { return d.sizes[0]});
+
+      // point.transition().attr("r", 10).ease("elastic")
+}
+
+function test(d){
+  alert(d.id)
+}
+// cook = {"type": "Point", "coordinates": [-4.1397, 50.3706], "sizes":10}
+// cook2 = {"type": "Point", "coordinates": [-43.2436, -22.9083], "sizes":20}
+
+time = 3
+
+svg.selectAll(".geojson").data([cook])
+.enter()
+.append("path")
+.attr("class","geojson")
+.attr("d", path)
+.attr("class", function(d) { return "geojson " + d.sizes[time]});
+
+
+
+
+d3.select(self.frameElement).style("height", height + "px");
+
+</script>
