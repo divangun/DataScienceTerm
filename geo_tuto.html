@@ -20,7 +20,7 @@
 }
 
 .boundary {
-  fill: blue;
+  fill: black;
   stroke: orange;
   stroke-width: .5px;
 }
@@ -41,13 +41,13 @@
 <script src="/topojson.v1.min.js"></script>
 <script>
 
-cook = {"type": "MultiPoint", "coordinates": [[-4.1397, 50.3706], [-43.2436, -22.9083] , [-67.2717, -55.9797] , [-149.4500, -17.6667], [172.1936, -41.4395] ,[151.1667, -34] , [147.70, -18.3] ,[106.7, -6], [18.4719, -34.3], [-5,-15], [-25.6, 37.7],[-4.1397, 50.3706]], "sizes":10}
+// cook = {"type": "MultiPoint", "coordinates": [[-4.1397, 50.3706], [-43.2436, -22.9083] , [-67.2717, -55.9797] , [-149.4500, -17.6667], [172.1936, -41.4395] ,[151.1667, -34] , [147.70, -18.3] ,[106.7, -6], [18.4719, -34.3], [-5,-15], [-25.6, 37.7],[-4.1397, 50.3706]], "sizes":10}
 
-// cook3 = {"place": {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}, {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}}
+// // cook3 = {"place": {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}, {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}}
 
-cook2 = {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}
+// cook2 = {"type": "Point", "coordinates": [124.00, 43.00], "sizes":[10,20,30,40]}
 
-cook4 = [{"type": "Point", "id":250, "coordinates": [128.716660, 36.566666], "sizes":[10,20,30,40]}, {"type": "Point", "coordinates": [34.00, 43.00], "sizes":[20,30,50,90]}]
+cook4 = [{"type": "Point", "id":250, "coordinates": [128.716660, 36.566666], "sizes":[10,20,30,40]}, {"type": "Point", "id":10, "coordinates": [34.00, 43.00], "sizes":[20,30,50,90]}]
 
 
 var width = 1400,
@@ -57,6 +57,7 @@ var projection = d3.geo.equirectangular()
     .scale(250)
     .translate([width / 2, height / 2])
     .precision(.1);
+
 
 var path = d3.geo.path()
     .projection(projection)
@@ -99,26 +100,23 @@ d3.json("/world-50m.json", function(error, world) {
 
 });
 
-function Move(d){
+function Move(d1){
     active = d3.select(this).classed("active", true)
-    svg.selectAll(".test").data(cook4)
-    .transition().attr("r", function(d2) { 
-      if(d.id==d2.id){
-        return 10
+    point.transition().attr("r", function(d2) {
+      if(d1.id == d2.id) {
+        return d2.sizes[3];
       } else {
-        return 90
+        return this.r.baseVal.value;
       }
-
     });
-
 }
 
 function MoveOut(d){
     active = d3.select(this).classed("active", false)
-    svg.selectAll(".test").data(cook4)
-    .transition().attr("r", function(d) { return d.sizes[0]});
-
-      // point.transition().attr("r", 10).ease("elastic")
+     point.transition().attr("r", function(d2) { 
+      return d2.sizes[0] });
+    // svg.selectAll(".test").data(cook4)
+    // .transition().attr("r", function(d) { return d.sizes[0]});
 }
 
 function test(d){
@@ -126,15 +124,6 @@ function test(d){
 }
 // cook = {"type": "Point", "coordinates": [-4.1397, 50.3706], "sizes":10}
 // cook2 = {"type": "Point", "coordinates": [-43.2436, -22.9083], "sizes":20}
-
-time = 3
-
-svg.selectAll(".geojson").data([cook])
-.enter()
-.append("path")
-.attr("class","geojson")
-.attr("d", path)
-.attr("class", function(d) { return "geojson " + d.sizes[time]});
 
 
 
